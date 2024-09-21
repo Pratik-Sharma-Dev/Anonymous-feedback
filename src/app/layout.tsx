@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <AuthProvider>
-      <body>
+      <body >
         <Navbar />
         {children}
         <Toaster />

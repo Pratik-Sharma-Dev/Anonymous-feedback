@@ -9,6 +9,8 @@ export async function GET(req: Request) {
     await dbConnect();
     const session = await getServerSession(authOptions);
     const user : User = session?.user as User;
+    console.log("session is " + session)
+    console.log("user is " + user.username)
 
     if(!session || !session.user) {
         return Response.json({
@@ -19,11 +21,11 @@ export async function GET(req: Request) {
     }
 
     const userId = new mongoose.Types.ObjectId(user._id);
-
+    
     try {
         // get the most recent messages for the user by aggregation pipeline
         const user : any = await UserModel.aggregate([
-            {$match : { id: userId}},
+            {$match : { _id: userId}},
             {$unwind : '$messages'},
             {$sort : {'messages.createdAt' : -1}},
             {$group : {_id : '$id', messages : {$push : '$messages'}}},
@@ -32,7 +34,7 @@ export async function GET(req: Request) {
         if(!user && user.length === 0) {
             return Response.json({
                 success: false,
-                message: "Usre not found"
+                message: "User not found"
             },
             { status: 401 })
         }

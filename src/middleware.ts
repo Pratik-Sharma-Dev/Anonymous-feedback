@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { removeRequestMeta } from 'next/dist/server/request-meta';
 export { default } from 'next-auth/middleware';
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/sign-in', '/sign-up', '/', '/verify/:path*'],
+  matcher: [ '/sign-in', '/sign-up', '/', '/verify/:path*' ]
 };
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
+  const token1 = request.cookies.get('token')?.value;
+  console.log("Token1", token1);
+  
   const url = request.nextUrl;
 
   // Redirect to dashboard if the user is already authenticated
