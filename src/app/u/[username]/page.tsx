@@ -17,14 +17,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import * as z from 'zod';
 import { ApiResponse } from '@/types/ApiResponse';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { messageSchema } from '@/schemas/messageSchema';
-
 
 const specialChar = '||';
 
@@ -38,12 +37,14 @@ const initialMessageString =
 export default function SendMessage() {
   const params = useParams<{ username: string }>();
   const username = params.username;
-  const {toast} = useToast()
+  const { toast } = useToast();
+
+  // State to handle loading for suggesting messages
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
 
   const {
     complete,
     completion,
-    isLoading: isSuggestLoading,
     error,
   } = useCompletion({
     api: '/api/suggest-messages',
@@ -80,7 +81,7 @@ export default function SendMessage() {
       toast({
         title: 'Error',
         description:
-          axiosError.response?.data.message ?? 'Failed to sent message',
+          axiosError.response?.data.message ?? 'Failed to send message',
         variant: 'destructive',
       });
     } finally {
@@ -90,10 +91,25 @@ export default function SendMessage() {
 
   const fetchSuggestedMessages = async () => {
     try {
-      complete('');
+      setIsSuggestLoading(true); // Set loading state to true
+      await complete(''); // Trigger the API request to get suggestions
     } catch (error) {
-      console.error('Error fetching messages:', error);
-      // Handle error appropriately
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
+        toast({
+          title: 'Too many requests',
+          description: 'Please try again later.',
+          variant: 'destructive',
+        });
+      } else {
+        console.error('Error fetching messages:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch suggested messages. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsSuggestLoading(false); // Set loading state to false
     }
   };
 
@@ -143,7 +159,11 @@ export default function SendMessage() {
             className="my-4"
             disabled={isSuggestLoading}
           >
-            Suggest Messages
+            {isSuggestLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              'Suggest Messages'
+            )}
           </Button>
           <p>Click on any message below to select it.</p>
         </div>
@@ -153,7 +173,7 @@ export default function SendMessage() {
           </CardHeader>
           <CardContent className="flex flex-col space-y-4">
             {error ? (
-              <p className="text-red-500">{error.message}</p>
+              <p className="text-red-500">Failed to fetch suggested messages. Please try again.</p>
             ) : (
               parseStringMessages(completion).map((message, index) => (
                 <Button

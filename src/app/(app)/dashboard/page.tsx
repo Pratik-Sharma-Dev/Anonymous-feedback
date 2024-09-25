@@ -62,8 +62,6 @@ function UserDashboard() {
       setIsSwitchLoading(true);
       try {
         const response = await axios.get<ApiResponse>('/api/get-messages');
-        console.log(response.data.messages);
-        
         setMessages(response.data.messages || []);
         if (refresh) {
           toast({
@@ -186,7 +184,7 @@ function UserDashboard() {
             <MessageCard
               key={message._id as string}
               message={message}
-              onMessageDelete={handleDeleteMessage}
+              onMessageDelete={handleDeleteMessage.bind(null, message._id as string)}
             />
           ))
         ) : (
