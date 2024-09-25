@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDebounceCallback } from 'usehooks-ts';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -28,7 +27,6 @@ export default function SignUpForm() {
   const [usernameMessage, setUsernameMessage] = useState('');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const debounced = useDebounceCallback(setUsername, 300);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -84,7 +82,7 @@ export default function SignUpForm() {
       const axiosError = error as AxiosError<ApiResponse>;
 
       // Default error message
-      let errorMessage = axiosError.response?.data.message;
+      const errorMessage = axiosError.response?.data.message;
       ('There was a problem with your sign-up. Please try again.');
 
       toast({
